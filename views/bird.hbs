@@ -4,6 +4,8 @@
 
     <h2>Description</h2>
     <p>{{bird.description}}</p>
+    <h2>Height(cm)</h2>
+    <p>{{bird.height}}</p>
     <h2>Average Eggs</h2>
     <p>{{bird.averageEggs}}</p>
     <h2>Conservation Status</h2>
@@ -13,6 +15,11 @@
     {{else}}
         <p>{{bird.name}} is not endangered</p>
     {{/if}}
+
+    <h2>Nest Information</h2>
+
+    <p>Location: {{bird.nest.loacation}}</p>
+    <p>Materials: {{bird.nest.materials}}</p>
 </div>
 <div class="dates-seen">
     <h2>Dates Seen</h2>
@@ -21,7 +28,7 @@
         <h3>Report a new sighting</h3>
 
         <form method="POST" action="/addSighting">
-            Sighting date: <input name="date">
+            Sighting date: <input type="date" name="date">
             <input type="hidden" name="_id" value="{{bird._id}}">
             <input type="submit" value="Submit">
         </form>
@@ -32,9 +39,11 @@
         </div>
     </div>
     <div class="sighting-list">
+        <p>Number of sightings: {{length bird.datesSeen}}</p>
+
         <div class="sighting">
             {{#each bird.datesSeen}}
-                <p>{{this}}</p>
+                <p>{{formatDate this}}</p>
             {{else}}
                 <p>No sightings for {{bird.name}}</p>
             {{/each}}

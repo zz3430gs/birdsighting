@@ -18,6 +18,14 @@ router.get('/', function(req, res, next) {
 router.post('/addbird', function (req, res, next) {
 
   var bird = Bird(req.body);
+
+  //Have to re-arrange the form data to match the nested schema.
+  //Form data can only be key-value pairs.
+  bird.nest = {
+      location: req.body.nestLocation,
+      materials: req.body.nestMaterials
+    }
+
   bird.save()
     .then((doc) =>{
       console.log(doc);
@@ -25,6 +33,7 @@ router.post('/addbird', function (req, res, next) {
     })
     .catch((err) =>{
       if (err.name === 'ValidationError'){
+          //check for validation errors, whether negative number of eggs or missing name
           req.flash('error', err.message);
           res.redirect('/');
       }
@@ -40,6 +49,7 @@ router.get('/bird/:_id', function (req, res, next) {
   Bird.findOne({_id: req.params._id})
     .then((doc)=>{
       if(doc){
+          //sorting the date of the sighting that was recorded from earliest to latest
           doc.datesSeen = doc.datesSeen.sort( function (a,b) {
               if (a && b){
                   return a.getTime() - b.getTime();
@@ -56,8 +66,11 @@ router.get('/bird/:_id', function (req, res, next) {
     });
 });
 
+/* POSt to add any bird sightings*/
 router.post('/addSighting', function (req, res, next) {
 
+    //add the date of the sighting of a bird
+    //must be in correct format
     Bird.findOneAndUpdate({_id: req.body._id}, {$push : {datesSeen: req.body.date}}, {runValidators: true})
         .then((doc)=>{
             if(doc) {
@@ -69,7 +82,6 @@ router.post('/addSighting', function (req, res, next) {
         })
         .catch((err)=>{
             console.log(err);
-
             if(err.name === 'CastError'){
                 req.flash('error', 'Date must be in a valid date format: mm/dd/yyyy');
                 res.redirect('/bird/' + req.body._id);
@@ -79,6 +91,20 @@ router.post('/addSighting', function (req, res, next) {
             }else {
                 next(err);
             }
+        });
+});
+/* POST to delete any bird sightings */
+router.post('/delete', function(req, res, next){
+
+    //delete a bird sighting
+    Bird.deleteOne({_id : req.body._id})
+        .then((result)=>{
+            if(result.deletedCount === 1) {
+                res.redirect('/')
+            }
+        })
+        .catch((err) => {
+            next(err);
         });
 });
 module.exports = router;
